@@ -53,3 +53,51 @@ struct CustomtextField:View{
             
     }
 }
+struct DotLoader:View{
+    @State var sizeOfDotOne = 1.0
+    @State var sizeOfDotTwo = 1.0
+    @State var sizeOfDotThree = 1.0
+    var timer = Timer.publish(every: 0.2, on: .current, in: .common).autoconnect()
+    var body: some View{
+        HStack(spacing: 20) {
+            Circle()
+                .fill(.red)
+                .scaleEffect(sizeOfDotOne)
+            Circle()
+                .fill(.red)
+                .scaleEffect(sizeOfDotTwo)
+            Circle()
+                .fill(.red)
+                .scaleEffect(sizeOfDotThree)
+        }
+        .onAppear(){
+            sizeOfDotOne = 1.5
+            sizeOfDotTwo = 1
+            sizeOfDotThree = 1
+        }
+        .onReceive(timer){ _ in
+            print(sizeOfDotOne,sizeOfDotTwo,sizeOfDotThree)
+            if (sizeOfDotOne == 1.5)
+            {
+                sizeOfDotOne = 1
+                sizeOfDotTwo = 1.5
+                sizeOfDotThree = 1
+            }
+            else if (sizeOfDotTwo == 1.5)
+            {
+                sizeOfDotOne = 1
+                sizeOfDotTwo = 1
+                sizeOfDotThree = 1.5
+            }
+            else if (sizeOfDotThree == 1.5)
+            {
+                sizeOfDotOne = 1.5
+                sizeOfDotTwo = 1
+                sizeOfDotThree = 1
+            }
+        }
+        .animation(.spring(dampingFraction: 0.3), value: sizeOfDotOne)
+        .animation(.spring(dampingFraction: 0.3), value: sizeOfDotTwo)
+        .animation(.spring(dampingFraction: 0.3), value: sizeOfDotThree)
+    }
+}

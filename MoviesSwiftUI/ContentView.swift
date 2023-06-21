@@ -15,7 +15,8 @@ struct User:Codable{
 
 struct ContentView: View {
     var body: some View{
-        MoviesView()
+//        MoviesView()
+        HomeScreen()
             .preferredColorScheme(.light)
     }
 }

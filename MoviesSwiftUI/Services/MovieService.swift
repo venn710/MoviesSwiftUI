@@ -30,8 +30,6 @@ class MovieService{
         }.resume()
     }
 }
-
-
 class URLImageService:ObservableObject{
     @Published var urlImageData:Data?
     func getUrlImageData(url:String){
@@ -49,3 +47,4 @@ class URLImageService:ObservableObject{
         }.resume()
     }
 }
+
