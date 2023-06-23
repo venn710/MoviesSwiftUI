@@ -6,50 +6,40 @@
 //
 
 import Foundation
+import Combine
 
 class MovieViewModel:ObservableObject{
-    @Published var moviesList:[MovieModel]=[]
-    @Published var popularMovies:[MovieDetailsModel] = []
-    @Published var isLoading = false
-//
-//    init(){
-//        getPopularMovies()
-//    }
-//
-    @Published var popularMoviesErrorMessage = ""
     
-    func getMoview(searchText:String)
-    {
-        MovieService.getAllMovies(searchTerm: searchText) { movieSearch in
-            guard let movieSearch = movieSearch else{
-                DispatchQueue.main.async{
-                    self.moviesList = []
-                }
-                return
-            }
-            DispatchQueue.main.async{
-                self.moviesList = movieSearch.search
-                print("length is \(self.moviesList.count)")
-            }
-        }
-    }
+    @Published var popularMoviesLoadingState:Loader<MoviesModel> = .idle
+    @Published var nowPlayingMoviesLoadingState:Loader<MoviesModel> = .idle
+    @Published var topRatedMoviesLoadingState:Loader<MoviesModel> = .idle
+    @Published var upcomingMoviesLoadingState:Loader<MoviesModel> = .idle
+    
     
     func getPopularMovies() {
-        self.isLoading = true
-        WebService.apiCall(endPoint: .popular, method: "GET", requestBody: nil) { (result: Result<PopularMoviesModel,ApiError>)  in
+        getMovies(stateKeyPath: \.popularMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .popular)
+    }
+    func getUpcomingMovies() {
+        getMovies(stateKeyPath: \.upcomingMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .upcoming)
+    }
+    func getTopRatedMovies() {
+        getMovies(stateKeyPath: \.topRatedMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .topRated)
+    }
+    func getNowPlayingMovies() {
+        getMovies(stateKeyPath: \.nowPlayingMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .nowPlaying)
+    }
+    func getMovies(stateKeyPath:ReferenceWritableKeyPath<MovieViewModel,Loader<MoviesModel>>,method:String,requestBody:Data?,endPoint:ApiEndPoint){
+        self[keyPath: stateKeyPath] = .loading
+        let webService = WebService()
+        webService.apiCall(endPoint: endPoint, method: method, requestBody: requestBody) { (result: Result<MoviesModel,ApiError>)  in
             switch result {
-            case .success(let popularMoviesModel):
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
-                    self.popularMovies = popularMoviesModel.results
-                    print(self.popularMovies.count)
-                    self.popularMoviesErrorMessage = ""
-                    self.isLoading = false
+            case .success(let moviesModel):
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    self[keyPath: stateKeyPath] = .success(moviesModel)
                 }
-                case .failure(let error):
+            case .failure(let error):
                 DispatchQueue.main.async{
-                    self.popularMovies = []
-                    self.popularMoviesErrorMessage = error.localizedDescription
-                    self.isLoading = false
+                    self[keyPath: stateKeyPath] = .Error(error)
                 }
             }
             

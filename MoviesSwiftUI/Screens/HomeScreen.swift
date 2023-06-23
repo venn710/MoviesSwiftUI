@@ -8,49 +8,24 @@
 import SwiftUI
 
 struct HomeScreen: View {
-    @StateObject var movieViewModel = MovieViewModel()
+    @ObservedObject var movieViewModel = MovieViewModel()
+    
     var body: some View {
         let _ = Self._printChanges()
-        VStack(alignment: .leading){
-            Text("POPULAR")
-            if movieViewModel.isLoading
-            {
-                DotLoader()
-                .frame(maxWidth: 80,maxHeight: 300)
-                .frame(maxWidth: .infinity,alignment: .center)
-            }
-            else
-            {
-                ScrollView(.horizontal,showsIndicators: false){
-                    HStack{
-                        ForEach(movieViewModel.popularMovies,id: \.id){movie in
-                            MovieCardView(movieDetails: movie)
-                        }
-                    }
-                }
-            }
-            Text("Popular")
-            if movieViewModel.isLoading
-            {
-                DotLoader()
-                .frame(maxWidth: 80,maxHeight: 300)
-                .frame(maxWidth: .infinity,alignment: .center)
-            }
-            else{
-                ScrollView(.horizontal,showsIndicators: false){
-                    HStack{
-                        ForEach(movieViewModel.popularMovies,id: \.id){movie in
-                            MovieCardView(movieDetails: movie)
-                        }
-                    }
-                }
-                Spacer()
-            }
+        ScrollView(showsIndicators: false){
+            HomeScreenScrollableView(title:"POPULAR",loaderState: movieViewModel.popularMoviesLoadingState)
+            HomeScreenScrollableView(title:"NOW PLAYING",loaderState: movieViewModel.nowPlayingMoviesLoadingState)
+            HomeScreenScrollableView(title:"UPCOMING",loaderState: movieViewModel.upcomingMoviesLoadingState)
+            HomeScreenScrollableView(title:"TOP RATED",loaderState: movieViewModel.topRatedMoviesLoadingState)
         }
-        .frame(maxWidth: .infinity,maxHeight: .infinity,alignment: .topLeading)
-        .padding(16)
+        .frame(maxWidth: .infinity,alignment: .top)
+        .padding(.vertical,16)
+        .background(.primaryColor)
         .onAppear{
             movieViewModel.getPopularMovies()
+            movieViewModel.getNowPlayingMovies()
+            movieViewModel.getUpcomingMovies()
+            movieViewModel.getTopRatedMovies()
         }
     }
 }
@@ -65,18 +40,64 @@ struct MovieCardView:View{
     var movieDetails:MovieDetailsModel
     var body: some View{
         VStack(alignment: .leading){
-            AsyncImage(url: URL(string: ApiConstants.imageBaseUrl+movieDetails.backDropPath)) { image in
-                image
-                    .resizable()
-            } placeholder: {
-                Image("Image_placeholder")
-                    .resizable()
-            }
-            .frame(width: 200,height: 250)
+            AsyncImage(url: URL(string: ApiConstants.imageBaseUrl+movieDetails.posterPath),transaction:.init(animation: .easeIn), content: { imagePhase in
+                switch imagePhase{
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                default:
+                    ZStack(alignment: .top){
+                        Color.teal
+                        Image("Image_placeholder")
+                            .resizable()
+                            .opacity(0.5)
+                            .aspectRatio(contentMode: .fit)
+                            .overlay(alignment:.bottom) {
+                                Text(movieDetails.title)
+                                    .foregroundColor(.white.opacity(0.5))
+                                    .fontWeight(.medium)
+                                    .multilineTextAlignment(.center)
+                                    .padding(4)
+                            }
+                    }
+                }}
+            )
             .cornerRadius(12)
-            Text(movieDetails.title)
-            Spacer()
         }
-        .frame(maxWidth: 200,maxHeight: .infinity)
     }
+    }
+
+
+
+struct HomeScreenScrollableView:View{
+    var title:String
+    var loaderState:Loader<MoviesModel>
+    var body: some View{
+        VStack(alignment: .center){
+            Text(title)
+                .foregroundColor(.titleColor)
+                .fontWeight(.bold)
+            switch loaderState{
+            case .loading,.idle:
+                DotLoaderAnimation()
+                    .frame(maxHeight:.infinity,alignment: .center)
+            case .success(let moviesModel):
+                ScrollView(.horizontal,showsIndicators: false){
+                    LazyHStack(spacing: 0){
+                        ForEach(moviesModel.results,id: \.id){movie in
+                            MovieCardView(movieDetails: movie)
+                                .padding(.horizontal,5)
+                        }
+                    }
+                }
+            case .Error(let error):
+                ErrorView(error: error)
+                    .frame(maxHeight: .infinity,alignment:.center)
+                
+            }
+        }
+        .frame(height: 250)
+    }
+    
 }

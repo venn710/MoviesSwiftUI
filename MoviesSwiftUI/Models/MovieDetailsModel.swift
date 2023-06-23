@@ -1,26 +1,11 @@
 //
-//  PopularMoviesModel.swift
+//  MovieDetailsModel.swift
 //  MoviesSwiftUI
 //
-//  Created by Venkatesham Boddula on 19/06/23.
+//  Created by Venkatesham Boddula on 22/06/23.
 //
 
 import Foundation
-
-struct NowPlayingMoviesModel:Codable{
-    var datesModel:DatesModel
-    var page:Int
-    var results:[MovieDetailsModel]
-    var totalPages:Int
-    var totalResults:Int
-    private enum CodingKeys:String,CodingKey{
-        case datesModel = "dates"
-        case page = "page"
-        case results = "results"
-        case totalPages="total_pages"
-        case totalResults="total_results"
-    }
-}
 
 struct MovieDetailsModel:Codable{
     var adult:Bool
@@ -54,9 +39,4 @@ struct MovieDetailsModel:Codable{
         case voteCount = "vote_count"
     }
     
-}
-
-struct DatesModel:Codable{
-    var maximum:String
-    var minimum:String
 }

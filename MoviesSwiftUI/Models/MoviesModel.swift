@@ -1,12 +1,11 @@
 //
-//  NowPlayingModel.swift
-//  MoviesSwiftUI
+//  MovieModel.swift
+//  testingApp
 //
-//  Created by Venkatesham Boddula on 19/06/23.
+//  Created by Venkatesham Boddula on 22/05/23.
 //
 
-import Foundation
-struct PopularMoviesModel:Codable{
+struct MoviesModel:Codable{
     var page:Int
     var results:[MovieDetailsModel]
     var totalPages:Int
@@ -17,5 +16,4 @@ struct PopularMoviesModel:Codable{
         case totalPages = "total_pages"
         case totalResults = "total_results"
     }
-    
 }

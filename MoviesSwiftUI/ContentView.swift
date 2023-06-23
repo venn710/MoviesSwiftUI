@@ -14,8 +14,16 @@ struct User:Codable{
 }
 
 struct ContentView: View {
+    init(){
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color.primaryColor)
+        appearance.shadowColor = .clear
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UITabBar.appearance().backgroundColor = .white
+    }
     var body: some View{
-//        MoviesView()
         HomeScreen()
             .preferredColorScheme(.light)
     }
