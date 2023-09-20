@@ -24,7 +24,9 @@ struct ContentView: View {
         UITabBar.appearance().backgroundColor = .white
     }
     var body: some View{
-        HomeScreen()
-            .preferredColorScheme(.light)
+        NavigationView{
+            HomeScreen()
+                .preferredColorScheme(.light)
+        }
     }
 }

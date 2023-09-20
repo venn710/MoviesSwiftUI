@@ -8,20 +8,30 @@
 import SwiftUI
 
 struct HomeScreen: View {
-    @ObservedObject var movieViewModel = MovieViewModel()
+    @StateObject var movieViewModel = MovieViewModel()
+    @State var shouldFetchMoviesData = true
     
     var body: some View {
-        let _ = Self._printChanges()
         ScrollView(showsIndicators: false){
-            HomeScreenScrollableView(title:"POPULAR",loaderState: movieViewModel.popularMoviesLoadingState)
-            HomeScreenScrollableView(title:"NOW PLAYING",loaderState: movieViewModel.nowPlayingMoviesLoadingState)
-            HomeScreenScrollableView(title:"UPCOMING",loaderState: movieViewModel.upcomingMoviesLoadingState)
-            HomeScreenScrollableView(title:"TOP RATED",loaderState: movieViewModel.topRatedMoviesLoadingState)
+            HomeScreenScrollableView(movieViewModel: movieViewModel, title:"POPULAR",loaderState: movieViewModel.popularMoviesLoadingState)
+            HomeScreenScrollableView(movieViewModel: movieViewModel,title:"NOW PLAYING",loaderState: movieViewModel.nowPlayingMoviesLoadingState)
+            HomeScreenScrollableView(movieViewModel: movieViewModel,title:"UPCOMING",loaderState: movieViewModel.upcomingMoviesLoadingState)
+            HomeScreenScrollableView(movieViewModel: movieViewModel,title:"TOP RATED",loaderState: movieViewModel.topRatedMoviesLoadingState)
         }
         .frame(maxWidth: .infinity,alignment: .top)
         .padding(.vertical,16)
         .background(.primaryColor)
-        .onAppear{
+        .onAppear {
+            if shouldFetchMoviesData
+            {
+                movieViewModel.getPopularMovies()
+                movieViewModel.getNowPlayingMovies()
+                movieViewModel.getUpcomingMovies()
+                movieViewModel.getTopRatedMovies()
+                shouldFetchMoviesData = false
+            }
+        }
+        .refreshable {
             movieViewModel.getPopularMovies()
             movieViewModel.getNowPlayingMovies()
             movieViewModel.getUpcomingMovies()
@@ -30,17 +40,11 @@ struct HomeScreen: View {
     }
 }
 
-struct HomeScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeScreen()
-    }
-}
-
 struct MovieCardView:View{
-    var movieDetails:MovieDetailsModel
+    var movieResultsModel:MovieResultsModel
     var body: some View{
         VStack(alignment: .leading){
-            AsyncImage(url: URL(string: ApiConstants.imageBaseUrl+movieDetails.posterPath),transaction:.init(animation: .easeIn), content: { imagePhase in
+            AsyncImage(url: URL(string: ApiConstants.imageBaseUrl+movieResultsModel.posterPath),transaction:.init(animation: .easeIn), content: { imagePhase in
                 switch imagePhase{
                 case .success(let image):
                     image
@@ -54,7 +58,7 @@ struct MovieCardView:View{
                             .opacity(0.5)
                             .aspectRatio(contentMode: .fit)
                             .overlay(alignment:.bottom) {
-                                Text(movieDetails.title)
+                                Text(movieResultsModel.title)
                                     .foregroundColor(.white.opacity(0.5))
                                     .fontWeight(.medium)
                                     .multilineTextAlignment(.center)
@@ -71,6 +75,7 @@ struct MovieCardView:View{
 
 
 struct HomeScreenScrollableView:View{
+    var movieViewModel:MovieViewModel
     var title:String
     var loaderState:Loader<MoviesModel>
     var body: some View{
@@ -85,9 +90,14 @@ struct HomeScreenScrollableView:View{
             case .success(let moviesModel):
                 ScrollView(.horizontal,showsIndicators: false){
                     LazyHStack(spacing: 0){
-                        ForEach(moviesModel.results,id: \.id){movie in
-                            MovieCardView(movieDetails: movie)
-                                .padding(.horizontal,5)
+                        ForEach(moviesModel.results,id: \.id){movieResultsModel in
+                            NavigationLink(destination: {
+                                MovieDetailsView(movieResultsModel:movieResultsModel)
+                            }, label: {
+                                MovieCardView(movieResultsModel: movieResultsModel)
+                                    .padding(.horizontal,5)
+                            })
+                            .buttonStyle(.plain)
                         }
                     }
                 }

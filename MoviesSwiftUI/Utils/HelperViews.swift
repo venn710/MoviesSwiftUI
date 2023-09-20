@@ -21,7 +21,6 @@ struct CustomImageView:View{
         VStack{
             image
                 .resizable()
-                .scaledToFit()
         }
         .onChange(of: imageService.urlImageData, perform:loadImage)
     }

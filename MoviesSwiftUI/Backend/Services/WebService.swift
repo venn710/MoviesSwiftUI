@@ -28,6 +28,7 @@ class WebService{
                     completion(.failure(.invalidData))
                     return
                 }
+//            print("decodedData is \(decodedData)")
                 completion(.success(decodedData))
             }.resume()
     }

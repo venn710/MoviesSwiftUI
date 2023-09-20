@@ -28,5 +28,8 @@ extension ShapeStyle where Self == Color{
     static var loaderColor:Color{
         Color.red
     }
+    static var imagePlaceHolderColor:Color{
+        Color.getColorFromHexCode(hexCode: "#d2d2d2")
+    }
     
 }

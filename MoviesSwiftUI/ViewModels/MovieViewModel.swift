@@ -14,27 +14,39 @@ class MovieViewModel:ObservableObject{
     @Published var nowPlayingMoviesLoadingState:Loader<MoviesModel> = .idle
     @Published var topRatedMoviesLoadingState:Loader<MoviesModel> = .idle
     @Published var upcomingMoviesLoadingState:Loader<MoviesModel> = .idle
+    @Published var movieDetailsLoadingState:Loader<MovieDetailsModel> = .idle
+     
+    init(){
+//        getPopularMovies()
+//        getUpcomingMovies()
+//        getTopRatedMovies()
+//        getNowPlayingMovies()
+    }
     
     
     func getPopularMovies() {
-        getMovies(stateKeyPath: \.popularMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .popular)
+        getMoviesData(stateKeyPath: \.popularMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .popular)
     }
     func getUpcomingMovies() {
-        getMovies(stateKeyPath: \.upcomingMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .upcoming)
+        getMoviesData(stateKeyPath: \.upcomingMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .upcoming)
     }
     func getTopRatedMovies() {
-        getMovies(stateKeyPath: \.topRatedMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .topRated)
+        getMoviesData(stateKeyPath: \.topRatedMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .topRated)
     }
     func getNowPlayingMovies() {
-        getMovies(stateKeyPath: \.nowPlayingMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .nowPlaying)
+        getMoviesData(stateKeyPath: \.nowPlayingMoviesLoadingState,method: "GET",requestBody: nil,endPoint: .nowPlaying)
     }
-    func getMovies(stateKeyPath:ReferenceWritableKeyPath<MovieViewModel,Loader<MoviesModel>>,method:String,requestBody:Data?,endPoint:ApiEndPoint){
+    func getMovieDetails(movieId:Int){
+        getMoviesData(stateKeyPath: \.movieDetailsLoadingState, method: "GET", requestBody: nil, endPoint: .movieDetails(movieId: movieId))
+    }
+    func getMoviesData<T:Codable>(stateKeyPath:ReferenceWritableKeyPath<MovieViewModel,Loader<T>>,method:String,requestBody:Data?,endPoint:ApiEndPoint){
+        print("calling from VM")
         self[keyPath: stateKeyPath] = .loading
         let webService = WebService()
-        webService.apiCall(endPoint: endPoint, method: method, requestBody: requestBody) { (result: Result<MoviesModel,ApiError>)  in
+        webService.apiCall(endPoint: endPoint, method: method, requestBody: requestBody) { (result: Result<T,ApiError>)  in
             switch result {
             case .success(let moviesModel):
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     self[keyPath: stateKeyPath] = .success(moviesModel)
                 }
             case .failure(let error):

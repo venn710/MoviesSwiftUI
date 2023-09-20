@@ -7,7 +7,7 @@
 
 struct MoviesModel:Codable{
     var page:Int
-    var results:[MovieDetailsModel]
+    var results:[MovieResultsModel]
     var totalPages:Int
     var totalResults:Int
     private enum CodingKeys:String,CodingKey{

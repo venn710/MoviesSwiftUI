@@ -12,6 +12,7 @@ public enum ApiEndPoint{
     case nowPlaying
     case topRated
     case upcoming
+    case movieDetails(movieId:Int)
     
     func apiEndPoint()->String{
         switch (self) {
@@ -23,6 +24,8 @@ public enum ApiEndPoint{
             return "/movie/top_rated"
         case .upcoming:
             return "/movie/upcoming"
+        case .movieDetails(let movieId):
+            return "/movie/\(movieId)"
         }
     }
 }
